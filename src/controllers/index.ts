@@ -1,0 +1,24 @@
+// export * from './academic-record-student.controller';
+export * from './admin-user.controller';
+export * from './course-grade.controller';
+export * from './course-lecturer.controller';
+export * from './course-programme.controller';
+// export * from './grade-course.controller';
+export * from './grade-student.controller';
+export * from './hod-programme.controller';
+export * from './hod-user.controller';
+export * from './lecturer-course.controller';
+export * from './lecturer-user.controller';
+export * from './programme-course.controller';
+export * from './programme-hod.controller';
+export * from './programme-student.controller';
+export * from './student-academic-record.controller';
+export * from './student-grade.controller';
+export * from './student-programme.controller';
+export * from './student-user.controller';
+export * from './user-address.controller';
+export * from './user-admin.controller';
+export * from './user-lecturer.controller';
+export * from './user-profile.controller';
+export * from './user.controller';
+
