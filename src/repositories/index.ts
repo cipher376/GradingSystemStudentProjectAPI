@@ -16,3 +16,4 @@ export * from './programme.repository';
 export * from './student.repository';
 export * from './course-programme-through.repository';
 export * from './hod.repository';
+export * from './role.repository';

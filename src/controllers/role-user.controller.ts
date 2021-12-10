@@ -7,21 +7,21 @@ import {
   getModelSchemaRef,
 } from '@loopback/rest';
 import {
-  Student,
+  Role,
   User,
 } from '../models';
-import {StudentRepository} from '../repositories';
+import {RoleRepository} from '../repositories';
 
-export class StudentUserController {
+export class RoleUserController {
   constructor(
-    @repository(StudentRepository)
-    public studentRepository: StudentRepository,
+    @repository(RoleRepository)
+    public roleRepository: RoleRepository,
   ) { }
 
-  @get('/students/{id}/user', {
+  @get('/roles/{id}/user', {
     responses: {
       '200': {
-        description: 'User belonging to Student',
+        description: 'User belonging to Role',
         content: {
           'application/json': {
             schema: {type: 'array', items: getModelSchemaRef(User)},
@@ -31,8 +31,8 @@ export class StudentUserController {
     },
   })
   async getUser(
-    @param.path.string('id') id: typeof Student.prototype.id,
+    @param.path.string('id') id: typeof Role.prototype.id,
   ): Promise<User> {
-    return this.studentRepository.user(id);
+    return this.roleRepository.user(id);
   }
 }

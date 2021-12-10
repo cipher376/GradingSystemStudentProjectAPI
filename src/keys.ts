@@ -96,3 +96,11 @@ export enum EXTERNAL_AUTH_PROVIDER {
 }
 
 
+export enum USER_ROLE {
+    ADMIN = 'ADMIN',
+    STUDENT = 'STUDENT',
+    LECTURER = 'LECTURER',
+    HOD = 'HOD'
+}
+
+

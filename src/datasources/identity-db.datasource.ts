@@ -17,7 +17,7 @@ const config = {
   port: 27017,
   user: '',
   password: '',
-  database: 'MainIdentityDb',
+  database: 'gradingSystemDb',
 };
 
 // Observe application's life cycle to disconnect the datasource when

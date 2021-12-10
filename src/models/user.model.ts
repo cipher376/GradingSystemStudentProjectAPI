@@ -1,14 +1,16 @@
-import {Entity, hasMany, hasOne, model, property, belongsTo} from '@loopback/repository';
+import {belongsTo, Entity, hasMany, hasOne, model, property} from '@loopback/repository';
 import {Address} from './address.model';
+import {Admin} from './admin.model';
 import {Authentication} from './authentication.model';
+import {Lecturer} from './lecturer.model';
 import {Password} from './password.model';
 import {Photo} from './photo.model';
 import {Profile} from './profile.model';
 import {ResetRequest} from './reset-request.model';
+import {Role} from './role.model';
+import {Student} from './student.model';
 import {UserConfig} from './user-config.model';
 import {UserIdentity} from './user-identity.model';
-import {Lecturer} from './lecturer.model';
-import {Admin} from './admin.model';
 
 @model()
 export class User extends Entity {
@@ -100,12 +102,6 @@ export class User extends Entity {
 
   @hasOne(() => UserIdentity)
   userIdentity: UserIdentity;
-
-  @property({
-    type: 'string',
-  })
-  studentId?: string;
-
   @belongsTo(() => Lecturer)
   lecturerId: string;
 
@@ -116,6 +112,15 @@ export class User extends Entity {
 
   @belongsTo(() => Admin)
   adminId: string;
+
+  @hasOne(() => Role)
+  role: Role;
+
+  @belongsTo(() => Student)
+  studentId: string;
+
+  @hasOne(() => Student)
+  student: Student;
   [prop: string]: unknown;
 
 

@@ -1,7 +1,6 @@
 import {authenticate, AuthenticationBindings} from '@loopback/authentication';
 import {OPERATION_SECURITY_SPEC} from '@loopback/authentication-jwt';
 import {inject} from '@loopback/core';
-import {logInvocation} from '@loopback/logging';
 import {
   CountSchema,
   Filter,
@@ -89,7 +88,7 @@ export class UserController {
       }
     }
   })
-  // @logInvocation()
+  //
   async signup(@requestBody(
     {
       content: {
@@ -391,7 +390,6 @@ export class UserController {
       }
     }
   })
-  @logInvocation()
   async login(
     @requestBody() credentials: Credentials,
   ): Promise<{token: string}> {
@@ -406,9 +404,12 @@ export class UserController {
     // console.log(userProfile);
 
     const token = await this.jwtService.generateToken(userProfile);
+    const u = await this.myProfile(userProfile);
+    // get employee data
+
 
     // check if user is deactivated
-    return Promise.resolve({token: token});
+    return Promise.resolve({token: token, user: u});
   }
 
 
@@ -427,7 +428,6 @@ export class UserController {
     },
   })
   @authenticate("jwt")
-  @logInvocation()
   async logout(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
@@ -453,7 +453,6 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['me'])
-  @logInvocation()
   async me(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
@@ -477,34 +476,42 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['my-profile'])
-  @logInvocation()
   async myProfile(
     @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
+    currentUser?: UserProfile,
   ): Promise<User> {
 
     // console.log(this.request);
     // clear the sensitive fields
-    const user = await this.findById(currentUser.id);
+    const user = await this.findById(currentUser?.id);
 
     // gather other user related information
 
-    await this.userRepository.profile(currentUser.id).get().then(profile => {
+    await this.userRepository.profile(currentUser?.id).get().then(profile => {
       user.profile = profile;
     }, error => {
       console.debug(error);
     });
+    try {
+      await this.userRepository.profilePhoto(currentUser?.id).get().then(ph => {
+        user.profilePhoto = ph;
+      }, error => {
+        // console.debug(error);
+      });
+    } catch (error) {
+      console.log(error)
+    }
+    try {
+      await this.userRepository.address(currentUser?.id).get().then(add => {
+        user.address = add;
+      }, error => {
+        console.debug(error);
+      })
+    } catch (error) {
+      console.log(error)
 
-    await this.userRepository.profilePhoto(currentUser.id).get().then(ph => {
-      user.profilePhoto = ph;
-    }, error => {
-      // console.debug(error);
-    });
-    await this.userRepository.address(currentUser.id).get().then(add => {
-      user.address = add;
-    }, error => {
-      console.debug(error);
-    })
+    }
+
     return Promise.resolve(user);
   }
 
@@ -523,14 +530,15 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['find-by-id'])
-  @logInvocation()
   async findById(
     @param.path.string('id') id: string,
     @param.filter(User, {exclude: 'where'}) filter?: FilterExcludingWhere<User>
   ): Promise<User> {
+
+    const user: User = await this.userRepository.findById(id, filter);
     try {
       console.log(filter);
-      const user: User = await this.userRepository.findById(id, filter);
+
       // gather other user related information
 
       await this.userRepository.profile(user.id).get().then(profile => {
@@ -538,23 +546,32 @@ export class UserController {
       }, error => {
         console.debug(error);
       });
-
+    } catch (error) {
+      console.log(error);
+    }
+    try {
       await this.userRepository.profilePhoto(user.id).get().then(ph => {
         user.profilePhoto = ph;
       }, error => {
         console.debug(error);
       });
+    } catch (error) {
+      console.log(error)
+    }
 
+    try {
       await this.userRepository.address(user.id).get().then(add => {
         user.address = add;
       }, error => {
         console.debug(error);
       })
-      return Promise.resolve(this.userService.convertToUserView(user));
     } catch (error) {
-      console.log(error);
-      throw new HttpErrors.NotFound('User not found')
+
+      console.log(error)
     }
+
+    return Promise.resolve(this.userService.convertToUserView(user));
+
   }
 
 
@@ -568,7 +585,7 @@ export class UserController {
   // })
   // @authenticate("jwt")
   // // @authorize(ACL_USER['update-by-id'])
-  // @logInvocation()
+  //
   // async updateById(
   //   @param.path.string('id') id: string,
   //   @inject(AuthenticationBindings.CURRENT_USER)
@@ -609,7 +626,6 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['list-all'])
-  @logInvocation()
   async searchExtensive(
     @param.path.string('searchKey') searchKey: string,
     @param.filter(User) filter?: Filter<User>,
@@ -742,7 +758,6 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['count'])
-  @logInvocation()
   async count(
     @param.where(User) where?: Where<User>,
   ): Promise<number> {
@@ -766,7 +781,6 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['list-all'])
-  @logInvocation()
   async find(
     @param.filter(User) filter?: Filter<User>,
   ): Promise<User[]> {
@@ -805,7 +819,6 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['list-all'])
-  @logInvocation()
   async findByApp(
     @param.path.string('appId') appId: string,
     @param.filter(User) filter?: Filter<User>,
@@ -872,7 +885,6 @@ export class UserController {
   })
   @authenticate("jwt")
   // @authorize(ACL_USER['create-many'])
-  @logInvocation()
   async createMany(
     @requestBody({
       content: {
@@ -908,7 +920,6 @@ export class UserController {
     },
   })
   @authenticate("jwt")
-  @logInvocation()
   async createProfilePhoto(
     @param.path.string('id') id: typeof User.prototype.id,
     @inject(AuthenticationBindings.CURRENT_USER)
@@ -946,7 +957,6 @@ export class UserController {
     },
   })
   @authenticate("jwt")
-  @logInvocation()
   async clearUserProfilePhotos(
     @param.path.string('id') id: string,
     @inject(AuthenticationBindings.CURRENT_USER)
@@ -990,7 +1000,6 @@ export class UserController {
       },
     },
   })
-  @logInvocation()
   async changePassword(
     @requestBody({
       content: {
@@ -1076,7 +1085,6 @@ export class UserController {
       },
     },
   })
-  @logInvocation()
   async resetPassword(
     @requestBody({
       content: {
@@ -1385,7 +1393,6 @@ export class UserController {
       },
     },
   })
-  @logInvocation()
   async emailVerificationRequest(
     @requestBody({
       content: {
@@ -1684,7 +1691,7 @@ export class UserController {
       },
     },
   })
-  @logInvocation()
+
   async verifyEmail(
     @param.path.string('token') token: string,
   ): Promise<any> {
@@ -1711,7 +1718,7 @@ export class UserController {
       },
     },
   })
-  @logInvocation()
+
   async phoneVerificationRequest(
     @requestBody({
       content: {
@@ -1749,7 +1756,7 @@ export class UserController {
       },
     },
   })
-  @logInvocation()
+
   async verifyPhone(
     @requestBody({
       content: {

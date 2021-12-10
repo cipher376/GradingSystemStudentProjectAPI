@@ -1,19 +1,22 @@
 import {Getter, inject} from '@loopback/core';
-import {DefaultCrudRepository, HasManyRepositoryFactory, HasOneRepositoryFactory, repository, BelongsToAccessor} from '@loopback/repository';
+import {BelongsToAccessor, DefaultCrudRepository, HasManyRepositoryFactory, HasOneRepositoryFactory, repository} from '@loopback/repository';
 import {IdentityDbDataSource} from '../datasources';
 import {
-  Address, Authentication, Password,
+  Address, Admin, Authentication, Lecturer, Password,
 
   Photo, Profile,
-  ResetRequest, User, UserRelations, Lecturer, Admin} from '../models';
+  ResetRequest, Role, Student, User, UserRelations
+} from '../models';
 import {AddressRepository} from './address.repository';
+import {AdminRepository} from './admin.repository';
 import {AuthenticationRepository} from './authentication.repository';
+import {LecturerRepository} from './lecturer.repository';
 import {PasswordRepository} from './password.repository';
 import {PhotoRepository} from './photo.repository';
 import {ProfileRepository} from './profile.repository';
 import {ResetRequestRepository} from './reset-request.repository';
-import {LecturerRepository} from './lecturer.repository';
-import {AdminRepository} from './admin.repository';
+import {RoleRepository} from './role.repository';
+import {StudentRepository} from './student.repository';
 
 export class UserRepository extends DefaultCrudRepository<
   User,
@@ -37,6 +40,10 @@ export class UserRepository extends DefaultCrudRepository<
 
   public readonly admin: BelongsToAccessor<Admin, typeof User.prototype.id>;
 
+  public readonly role: HasOneRepositoryFactory<Role, typeof User.prototype.id>;
+
+  public readonly student: HasOneRepositoryFactory<Student, typeof User.prototype.id>;
+
   constructor(
     @inject('datasources.identityDb') dataSource: IdentityDbDataSource,
     @repository.getter('PasswordRepository') protected passwordRepositoryGetter: Getter<PasswordRepository>,
@@ -44,9 +51,17 @@ export class UserRepository extends DefaultCrudRepository<
     @repository.getter('AddressRepository') protected addressRepositoryGetter: Getter<AddressRepository>,
     @repository.getter('PhotoRepository') protected photoRepositoryGetter: Getter<PhotoRepository>,
     @repository.getter('ResetRequestRepository') protected resetRequestRepositoryGetter: Getter<ResetRequestRepository>,
-    @repository.getter('AuthenticationRepository') protected authenticationRepositoryGetter: Getter<AuthenticationRepository>, @repository.getter('LecturerRepository') protected lecturerRepositoryGetter: Getter<LecturerRepository>, @repository.getter('AdminRepository') protected adminRepositoryGetter: Getter<AdminRepository>,
+    @repository.getter('AuthenticationRepository') protected authenticationRepositoryGetter: Getter<AuthenticationRepository>,
+    @repository.getter('LecturerRepository') protected lecturerRepositoryGetter: Getter<LecturerRepository>,
+    @repository.getter('AdminRepository') protected adminRepositoryGetter: Getter<AdminRepository>,
+    @repository.getter('RoleRepository') protected roleRepositoryGetter: Getter<RoleRepository>,
+    @repository.getter('StudentRepository') protected studentRepositoryGetter: Getter<StudentRepository>,
   ) {
     super(User, dataSource);
+    this.student = this.createHasOneRepositoryFactoryFor('student', studentRepositoryGetter);
+    this.registerInclusionResolver('student', this.student.inclusionResolver);
+    this.role = this.createHasOneRepositoryFactoryFor('role', roleRepositoryGetter);
+    this.registerInclusionResolver('role', this.role.inclusionResolver);
     this.admin = this.createBelongsToAccessorFor('admin', adminRepositoryGetter,);
     this.registerInclusionResolver('admin', this.admin.inclusionResolver);
     this.lecturer = this.createBelongsToAccessorFor('lecturer', lecturerRepositoryGetter,);

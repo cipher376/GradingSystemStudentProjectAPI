@@ -18,3 +18,4 @@ export * from './user.model';
 
 
 export * from './hod.model';
+export * from './role.model';

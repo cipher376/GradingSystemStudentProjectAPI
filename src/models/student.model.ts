@@ -1,8 +1,8 @@
-import {Entity, model, property, hasOne, hasMany, belongsTo} from '@loopback/repository';
-import {User} from './user.model';
+import {belongsTo, Entity, hasMany, hasOne, model, property} from '@loopback/repository';
 import {AcademicRecord} from './academic-record.model';
-import {Programme} from './programme.model';
 import {Grade} from './grade.model';
+import {Programme} from './programme.model';
+import {User} from './user.model';
 
 @model()
 export class Student extends Entity {
@@ -12,6 +12,13 @@ export class Student extends Entity {
     generated: true,
   })
   id?: string;
+
+  @property({
+    type: 'boolean',
+    default: false,
+  })
+  isComplete: boolean;
+
 
   @hasOne(() => User)
   user: User;
@@ -24,6 +31,9 @@ export class Student extends Entity {
 
   @hasMany(() => Grade)
   grades: Grade[];
+
+  @belongsTo(() => User)
+  userId: string;
 
   constructor(data?: Partial<Student>) {
     super(data);

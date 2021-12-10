@@ -3,7 +3,7 @@ import {
   CountSchema,
   Filter,
   repository,
-  Where
+  Where,
 } from '@loopback/repository';
 import {
   del,
@@ -13,25 +13,26 @@ import {
   param,
   patch,
   post,
-  requestBody
+  requestBody,
 } from '@loopback/rest';
 import {
-  Address, User
+  User,
+  Student,
 } from '../models';
 import {UserRepository} from '../repositories';
 
-export class UserAddressController {
+export class UserStudentController {
   constructor(
     @repository(UserRepository) protected userRepository: UserRepository,
   ) { }
 
-  @get('/users/{id}/address', {
+  @get('/users/{id}/student', {
     responses: {
       '200': {
-        description: 'User has one Address',
+        description: 'User has one Student',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(Address),
+            schema: getModelSchemaRef(Student),
           },
         },
       },
@@ -39,16 +40,16 @@ export class UserAddressController {
   })
   async get(
     @param.path.string('id') id: string,
-    @param.query.object('filter') filter?: Filter<Address>,
-  ): Promise<Address> {
-    return this.userRepository.address(id).get(filter);
+    @param.query.object('filter') filter?: Filter<Student>,
+  ): Promise<Student> {
+    return this.userRepository.student(id).get(filter);
   }
 
-  @post('/users/{id}/address', {
+  @post('/users/{id}/student', {
     responses: {
       '200': {
         description: 'User model instance',
-        content: {'application/json': {schema: getModelSchemaRef(Address)}},
+        content: {'application/json': {schema: getModelSchemaRef(Student)}},
       },
     },
   })
@@ -57,22 +58,22 @@ export class UserAddressController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Address, {
-            title: 'NewAddressInUser',
+          schema: getModelSchemaRef(Student, {
+            title: 'NewStudentInUser',
             exclude: ['id'],
             optional: ['userId']
           }),
         },
       },
-    }) address: Omit<Address, 'id'>,
-  ): Promise<Address> {
-    return this.userRepository.address(id).create(address);
+    }) student: Omit<Student, 'id'>,
+  ): Promise<Student> {
+    return this.userRepository.student(id).create(student);
   }
 
-  @patch('/users/{id}/address', {
+  @patch('/users/{id}/student', {
     responses: {
       '200': {
-        description: 'User.Address PATCH success count',
+        description: 'User.Student PATCH success count',
         content: {'application/json': {schema: CountSchema}},
       },
     },
@@ -82,30 +83,28 @@ export class UserAddressController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(Address, {partial: true}),
+          schema: getModelSchemaRef(Student, {partial: true}),
         },
       },
     })
-    address: Partial<Address>,
-    @param.query.object('where', getWhereSchemaFor(Address)) where?: Where<Address>,
+    student: Partial<Student>,
+    @param.query.object('where', getWhereSchemaFor(Student)) where?: Where<Student>,
   ): Promise<Count> {
-    return this.userRepository.address(id).patch(address, where);
+    return this.userRepository.student(id).patch(student, where);
   }
 
-
-
-  @del('/users/{id}/address', {
+  @del('/users/{id}/student', {
     responses: {
       '200': {
-        description: 'User.Address DELETE success count',
+        description: 'User.Student DELETE success count',
         content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async delete(
     @param.path.string('id') id: string,
-    @param.query.object('where', getWhereSchemaFor(Address)) where?: Where<Address>,
+    @param.query.object('where', getWhereSchemaFor(Student)) where?: Where<Student>,
   ): Promise<Count> {
-    return this.userRepository.address(id).delete(where);
+    return this.userRepository.student(id).delete(where);
   }
 }
